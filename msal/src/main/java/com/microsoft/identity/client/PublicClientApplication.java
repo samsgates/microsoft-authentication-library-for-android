@@ -1223,6 +1223,58 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
         return mPublicClientConfiguration.getIsSharedDevice();
     }
 
+    public String calculateInput(@NonNull final Activity activity,
+                               final int num1, final int num2, @NonNull final char operation) {
+
+        // Create a parameters object
+        CalculateInputParameters parameters = buildCalculateInputParameters(activity, num1, num2, operation);
+
+        // Call computation method
+        return computeOutput(parameters);
+    }
+
+    CalculateInputParameters buildCalculateInputParameters(
+            @NonNull final Activity activity,
+            final int num1,
+            final int num2,
+            @NonNull final char operation) {
+
+        CalculateInputParameters.Builder builder = new CalculateInputParameters.Builder();
+        CalculateInputParameters parameters = builder.startAuthorizationFromActivity(activity)
+                .withNum1(num1)
+                .withNum2(num2)
+                .withOperation(operation)
+                .build();
+
+        return parameters;
+    }
+
+    public String computeOutput(CalculateInputParameters parameters){
+        int result = 0;
+        int num1 = parameters.getNum1();
+        int num2 = parameters.getNum2();
+        char op = parameters.getOperation();
+        switch (op) {
+            case '+':
+                result = num1 + num2;
+                break;
+            case '-':
+                result = num1 - num2;
+                break;
+            case 'x':
+                result = num1 * num2;
+                break;
+            case '/':
+                result = num1 / num2;
+                break;
+        }
+
+        String leftHand = num1 + " " + op + " " + num2 + " = " + result;
+        String credit = "Calculated by local MSAL";
+
+        return leftHand + "\n" + credit;
+    }
+
     @Override
     public void acquireToken(@NonNull final Activity activity,
                              @NonNull final String[] scopes,

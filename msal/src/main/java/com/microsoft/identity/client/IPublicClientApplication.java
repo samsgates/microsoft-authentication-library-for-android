@@ -91,6 +91,10 @@ public interface IPublicClientApplication {
      */
     PublicClientApplicationConfiguration getConfiguration();
 
+
+    String calculateInput(@NonNull final Activity activity,
+                                 final int num1, final int num2, @NonNull final char operation);
+
     /**
      * Returns whether the application is being run on a device that is marked as a shared.
      * Only SingleAccountPublicClientApplications may be used on shared devices
