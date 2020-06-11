@@ -1250,7 +1250,7 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
     }
 
     public String computeOutput(CalculateInputParameters parameters){
-        int result = 0;
+        double result = 0;
         int num1 = parameters.getNum1();
         int num2 = parameters.getNum2();
         char op = parameters.getOperation();
@@ -1265,7 +1265,7 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
                 result = num1 * num2;
                 break;
             case '/':
-                result = num1 / num2;
+                result = (double) num1 / (double) num2;
                 break;
         }
 
