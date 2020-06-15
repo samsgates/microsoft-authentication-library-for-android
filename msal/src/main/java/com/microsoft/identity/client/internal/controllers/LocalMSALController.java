@@ -29,6 +29,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
+import com.microsoft.identity.client.CalculateInputParameters;
 import com.microsoft.identity.client.exception.MsalUiRequiredException;
 import com.microsoft.identity.common.exception.ArgumentException;
 import com.microsoft.identity.common.exception.ClientException;
@@ -36,6 +37,7 @@ import com.microsoft.identity.common.exception.ServiceException;
 import com.microsoft.identity.common.internal.authorities.Authority;
 import com.microsoft.identity.common.internal.authscheme.AbstractAuthenticationScheme;
 import com.microsoft.identity.common.internal.cache.ICacheRecord;
+import com.microsoft.identity.common.internal.commands.parameters.CalculateInputCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.CommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.InteractiveTokenCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.RemoveAccountCommandParameters;
@@ -456,5 +458,36 @@ public class LocalMSALController extends BaseController {
     @Override
     public boolean removeCurrentAccount(RemoveAccountCommandParameters parameters) throws Exception {
         return removeAccount(parameters);
+    }
+
+    @Override
+    public String calculateInput(CalculateInputCommandParameters parameters) {
+        return computeOutput(parameters);
+    }
+
+    public String computeOutput(CalculateInputCommandParameters parameters){
+        double result = 0;
+        int num1 = parameters.getNum1();
+        int num2 = parameters.getNum2();
+        char op = parameters.getOperation();
+        switch (op) {
+            case '+':
+                result = num1 + num2;
+                break;
+            case '-':
+                result = num1 - num2;
+                break;
+            case 'x':
+                result = num1 * num2;
+                break;
+            case '/':
+                result = (double) num1 / (double) num2;
+                break;
+        }
+
+        String leftHand = num1 + " " + op + " " + num2 + " = " + result;
+        String credit = "Calculated by LocalMSALController (Command)";
+
+        return leftHand + "\n" + credit;
     }
 }

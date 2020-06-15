@@ -22,6 +22,7 @@ import com.microsoft.identity.common.internal.authorities.AzureActiveDirectoryB2
 import com.microsoft.identity.common.internal.authscheme.AbstractAuthenticationScheme;
 import com.microsoft.identity.common.internal.authscheme.AuthenticationSchemeFactory;
 import com.microsoft.identity.common.internal.cache.SchemaUtil;
+import com.microsoft.identity.common.internal.commands.parameters.CalculateInputCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.CommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.InteractiveTokenCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.RemoveAccountCommandParameters;
@@ -186,6 +187,31 @@ public class CommandParametersAdapter {
                 .authenticationScheme(authenticationScheme)
                 .scopes(new HashSet<>(parameters.getScopes()))
                 .powerOptCheckEnabled(configuration.isPowerOptCheckForEnabled())
+                .build();
+
+        return commandParameters;
+    }
+
+    public static CalculateInputCommandParameters createCalculateInputCommandParameters(
+            @NonNull final PublicClientApplicationConfiguration configuration,
+            @NonNull final OAuth2TokenCache tokenCache,
+            final int num1, final int num2, @NonNull final char operation) {
+
+        final CalculateInputCommandParameters commandParameters = CalculateInputCommandParameters.builder()
+                .androidApplicationContext(configuration.getAppContext())
+                .applicationName(configuration.getAppContext().getPackageName())
+                .applicationVersion(getPackageVersion(configuration.getAppContext()))
+                .clientId(configuration.getClientId())
+                .isSharedDevice(configuration.getIsSharedDevice())
+                .redirectUri(configuration.getRedirectUri())
+                .oAuth2TokenCache(tokenCache)
+                .requiredBrokerProtocolVersion(configuration.getRequiredBrokerProtocolVersion())
+                .sdkType(SdkType.MSAL)
+                .sdkVersion(PublicClientApplication.getSdkVersion())
+                .powerOptCheckEnabled(configuration.isPowerOptCheckForEnabled())
+                .num1(num1)
+                .num2(num2)
+                .operation(operation)
                 .build();
 
         return commandParameters;

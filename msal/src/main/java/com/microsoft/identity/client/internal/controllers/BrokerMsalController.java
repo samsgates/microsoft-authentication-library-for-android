@@ -48,6 +48,7 @@ import com.microsoft.identity.common.internal.broker.BrokerValidator;
 import com.microsoft.identity.common.internal.broker.MicrosoftAuthClient;
 import com.microsoft.identity.common.internal.cache.ICacheRecord;
 import com.microsoft.identity.common.internal.cache.MsalOAuth2TokenCache;
+import com.microsoft.identity.common.internal.commands.parameters.CalculateInputCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.CommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.InteractiveTokenCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.RemoveAccountCommandParameters;
@@ -553,6 +554,41 @@ public class BrokerMsalController extends BaseController {
                     public void putValueInSuccessEvent(ApiEndEvent event, Boolean result) {
                     }
                 });
+    }
+
+    /**
+     * Simple calculator method that computes a result from input.
+     * @param parameters holds input variables numbers and operation
+     * @return computed result along with status of where it was computed.
+     */
+    @Override
+    public String calculateInput(CalculateInputCommandParameters parameters) {
+        return computeOutput(parameters);
+    }
+    public String computeOutput(CalculateInputCommandParameters parameters){
+        double result = 0;
+        int num1 = parameters.getNum1();
+        int num2 = parameters.getNum2();
+        char op = parameters.getOperation();
+        switch (op) {
+            case '+':
+                result = num1 + num2;
+                break;
+            case '-':
+                result = num1 - num2;
+                break;
+            case 'x':
+                result = num1 * num2;
+                break;
+            case '/':
+                result = (double) num1 / (double) num2;
+                break;
+        }
+
+        String leftHand = num1 + " " + op + " " + num2 + " = " + result;
+        String credit = "Calculated by BrokerMsalController (Command)";
+
+        return leftHand + "\n" + credit;
     }
 
     /**

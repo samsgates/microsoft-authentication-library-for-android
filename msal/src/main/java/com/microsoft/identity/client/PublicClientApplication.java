@@ -64,10 +64,12 @@ import com.microsoft.identity.common.internal.cache.ISharedPreferencesFileManage
 import com.microsoft.identity.common.internal.cache.MsalOAuth2TokenCache;
 import com.microsoft.identity.common.internal.cache.SchemaUtil;
 import com.microsoft.identity.common.internal.cache.SharedPreferencesFileManager;
+import com.microsoft.identity.common.internal.commands.CalculateInputCommand;
 import com.microsoft.identity.common.internal.commands.CommandCallback;
 import com.microsoft.identity.common.internal.commands.GetDeviceModeCommand;
 import com.microsoft.identity.common.internal.commands.InteractiveTokenCommand;
 import com.microsoft.identity.common.internal.commands.SilentTokenCommand;
+import com.microsoft.identity.common.internal.commands.parameters.CalculateInputCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.CommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.InteractiveTokenCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.SilentTokenCommandParameters;
@@ -1233,6 +1235,7 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
         return computeOutput(parameters);
     }
 
+
     CalculateInputParameters buildCalculateInputParameters(
             @NonNull final Activity activity,
             final int num1,
@@ -1273,6 +1276,53 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
         String credit = "Calculated by local MSAL";
 
         return leftHand + "\n" + credit;
+    }
+
+    public String calculateInputWithCommand(@NonNull final Activity activity,
+                                            final int num1, final int num2, @NonNull final char operation,
+                                            @NonNull final CalculateInputCallback callback) {
+
+        final CalculateInputCommandParameters commandParameters = CommandParametersAdapter
+                .createCalculateInputCommandParameters(
+                        mPublicClientConfiguration,
+                        mPublicClientConfiguration.getOAuth2TokenCache(),
+                        num1, num2, operation);
+
+        try {
+            Authority x = mPublicClientConfiguration.getDefaultAuthority();
+            final CalculateInputCommand removeAccountCommand = new CalculateInputCommand(
+                    commandParameters,
+                    MSALControllerFactory.getDefaultController(
+                            mPublicClientConfiguration.getAppContext(),
+                            mPublicClientConfiguration.getDefaultAuthority(),
+                            mPublicClientConfiguration
+                    ),
+                    new CommandCallback<String, BaseException>() {
+                        @Override
+                        public void onError(BaseException error) {
+                            callback.onError(MsalExceptionAdapter.msalExceptionFromBaseException(error));
+                        }
+
+                        @Override
+                        public void onTaskCompleted(String result) {
+                            callback.onTaskCompleted(result);
+                        }
+
+                        @Override
+                        public void onCancel() {
+                            //Do nothing
+                        }
+                    },
+                    PublicApiId.PCA_ACQUIRE_TOKEN_WITH_PARAMETERS
+            );
+
+            CommandDispatcher.submitSilent(removeAccountCommand);
+
+        } catch (final MsalClientException e) {
+            callback.onError(e);
+        }
+
+        return null;
     }
 
     @Override

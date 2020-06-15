@@ -95,6 +95,10 @@ public interface IPublicClientApplication {
     String calculateInput(@NonNull final Activity activity,
                                  final int num1, final int num2, @NonNull final char operation);
 
+    String calculateInputWithCommand(@NonNull final Activity activity,
+                                            final int num1, final int num2, @NonNull final char operation,
+                                            @NonNull final CalculateInputCallback callback);
+
     /**
      * Returns whether the application is being run on a device that is marked as a shared.
      * Only SingleAccountPublicClientApplications may be used on shared devices
@@ -166,4 +170,19 @@ public interface IPublicClientApplication {
         void onError(final MsalException exception);
     }
 
+    interface CalculateInputCallback{
+        /**
+         * Called once succeed and pass the result object.
+         *
+         * @param result the success result.
+         */
+        void onTaskCompleted(String result);
+
+        /**
+         * Called once exception thrown.
+         *
+         * @param exception
+         */
+        void onError(MsalException exception);
+    }
 }
