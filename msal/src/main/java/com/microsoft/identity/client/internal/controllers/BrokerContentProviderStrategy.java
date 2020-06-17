@@ -33,6 +33,8 @@ import com.microsoft.identity.client.exception.BrokerCommunicationException;
 import com.microsoft.identity.common.exception.BaseException;
 import com.microsoft.identity.common.internal.broker.BrokerValidator;
 import com.microsoft.identity.common.internal.cache.ICacheRecord;
+import com.microsoft.identity.common.internal.commands.CalculateInputCommand;
+import com.microsoft.identity.common.internal.commands.parameters.CalculateInputCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.CommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.InteractiveTokenCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.RemoveAccountCommandParameters;
@@ -53,6 +55,7 @@ import androidx.annotation.Nullable;
 import static com.microsoft.identity.common.adal.internal.AuthenticationConstants.BrokerContentProvider.ACQUIRE_TOKEN_INTERACTIVE_PATH;
 import static com.microsoft.identity.common.adal.internal.AuthenticationConstants.BrokerContentProvider.ACQUIRE_TOKEN_SILENT_PATH;
 import static com.microsoft.identity.common.adal.internal.AuthenticationConstants.BrokerContentProvider.AUTHORITY;
+import static com.microsoft.identity.common.adal.internal.AuthenticationConstants.BrokerContentProvider.CALCULATE_INPUT_PATH;
 import static com.microsoft.identity.common.adal.internal.AuthenticationConstants.BrokerContentProvider.CONTENT_SCHEME;
 import static com.microsoft.identity.common.adal.internal.AuthenticationConstants.BrokerContentProvider.GET_ACCOUNTS_PATH;
 import static com.microsoft.identity.common.adal.internal.AuthenticationConstants.BrokerContentProvider.GET_CURRENT_ACCOUNT_SHARED_DEVICE_PATH;
@@ -362,6 +365,41 @@ public class BrokerContentProviderStrategy extends BrokerBaseStrategy {
                     @Override
                     public Boolean getResultFromBundle(Bundle resultBundle) throws BaseException {
                         return mResultAdapter.getDeviceModeFromResultBundle(resultBundle);
+                    }
+                });
+    }
+
+    @Override
+    protected String calculateInput(@NonNull CalculateInputCommandParameters parameters,
+                          @Nullable final String negotiatedBrokerProtocolVersion) throws BaseException{
+        final String methodName = "calculateInputWithContentProvider";
+
+        return performContentProviderOperation(
+                parameters,
+                new ContentProviderOperation<CalculateInputCommandParameters, String>() {
+
+                    @Nullable
+                    @Override
+                    public Bundle getRequestBundle(CalculateInputCommandParameters parameters) {
+                        return mRequestAdapter.getRequestBundleForCalculateInput(parameters);
+                    }
+
+                    @NonNull
+                    @Override
+                    public String getMethodName() {
+                        return methodName;
+                    }
+
+                    @NonNull
+                    @Override
+                    public String getUriPath() {
+                        return CALCULATE_INPUT_PATH;
+                    }
+
+                    @NonNull
+                    @Override
+                    public String getResultFromBundle(Bundle resultBundle) throws BaseException {
+                        return mResultAdapter.calculateInputFromResultBundle(resultBundle);
                     }
                 });
     }

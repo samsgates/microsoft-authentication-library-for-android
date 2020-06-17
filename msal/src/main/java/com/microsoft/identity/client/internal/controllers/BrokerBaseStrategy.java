@@ -33,6 +33,7 @@ import com.microsoft.identity.common.adal.internal.AuthenticationConstants;
 import com.microsoft.identity.common.exception.BaseException;
 import com.microsoft.identity.common.internal.broker.BrokerRequest;
 import com.microsoft.identity.common.internal.cache.ICacheRecord;
+import com.microsoft.identity.common.internal.commands.parameters.CalculateInputCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.CommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.InteractiveTokenCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.RemoveAccountCommandParameters;
@@ -64,6 +65,9 @@ abstract class BrokerBaseStrategy {
 
     abstract boolean getDeviceMode(@NonNull final CommandParameters parameters,
                                    @Nullable String negotiatedBrokerProtocolVersion) throws BaseException;
+
+    abstract String calculateInput(@NonNull CalculateInputCommandParameters parameters,
+                          @Nullable final String negotiatedBrokerProtocolVersion) throws BaseException;
 
     abstract List<ICacheRecord> getCurrentAccountInSharedDevice(@NonNull final CommandParameters parameters,
                                                                 @Nullable String negotiatedBrokerProtocolVersion) throws BaseException;

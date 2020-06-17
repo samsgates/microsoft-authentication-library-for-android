@@ -33,13 +33,13 @@ import androidx.annotation.WorkerThread;
 
 import com.microsoft.identity.client.IMicrosoftAuthService;
 import com.microsoft.identity.client.exception.BrokerCommunicationException;
-import com.microsoft.identity.common.adal.internal.AuthenticationConstants;
 import com.microsoft.identity.common.exception.BaseException;
 import com.microsoft.identity.common.exception.ClientException;
 import com.microsoft.identity.common.exception.ErrorStrings;
 import com.microsoft.identity.common.internal.broker.MicrosoftAuthClient;
 import com.microsoft.identity.common.internal.broker.MicrosoftAuthServiceFuture;
 import com.microsoft.identity.common.internal.cache.ICacheRecord;
+import com.microsoft.identity.common.internal.commands.parameters.CalculateInputCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.CommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.InteractiveTokenCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.RemoveAccountCommandParameters;
@@ -289,6 +289,30 @@ public class BrokerAuthServiceStrategy extends BrokerBaseStrategy {
                     @Override
                     public String getOperationName() {
                         return ":getDeviceModeWithAuthService";
+                    }
+                });
+    }
+
+    @Override
+    protected String calculateInput(@NonNull final CalculateInputCommandParameters parameters,
+                          @Nullable final String negotiatedBrokerProtocolVersion) throws BaseException{
+
+        return performAuthServiceOperation(parameters.getAndroidApplicationContext(),
+                new AuthServiceOperation<String>() {
+                    @Override
+                    public String perform(IMicrosoftAuthService service) throws BaseException, RemoteException {
+                        final Bundle requestBundle = mRequestAdapter.getRequestBundleForCalculateInput(
+                                parameters
+                        );
+
+                        return mResultAdapter.calculateInputFromResultBundle(
+                                service.calculateInput(requestBundle)
+                        );
+                    }
+
+                    @Override
+                    public String getOperationName() {
+                        return ":calculateInputWithAuthService";
                     }
                 });
     }

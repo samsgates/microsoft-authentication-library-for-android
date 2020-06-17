@@ -562,33 +562,36 @@ public class BrokerMsalController extends BaseController {
      * @return computed result along with status of where it was computed.
      */
     @Override
-    public String calculateInput(CalculateInputCommandParameters parameters) {
+    public String calculateInput(CalculateInputCommandParameters parameters) throws Exception{
         return computeOutput(parameters);
     }
-    public String computeOutput(CalculateInputCommandParameters parameters){
-        double result = 0;
-        int num1 = parameters.getNum1();
-        int num2 = parameters.getNum2();
-        char op = parameters.getOperation();
-        switch (op) {
-            case '+':
-                result = num1 + num2;
-                break;
-            case '-':
-                result = num1 - num2;
-                break;
-            case 'x':
-                result = num1 * num2;
-                break;
-            case '/':
-                result = (double) num1 / (double) num2;
-                break;
-        }
+    public String computeOutput(CalculateInputCommandParameters parameters) throws Exception{
+        return invokeBrokerOperation(parameters,
+                new BrokerOperationInfo<CalculateInputCommandParameters, String>() {
+                    @Nullable
+                    @Override
+                    public String perform(@NonNull BrokerBaseStrategy strategy,
+                                           @NonNull CalculateInputCommandParameters parameters,
+                                           @Nullable String negotiatedBrokerProtocolVersion) throws Exception {
+                        return strategy.calculateInput(parameters, negotiatedBrokerProtocolVersion);
+                    }
 
-        String leftHand = num1 + " " + op + " " + num2 + " = " + result;
-        String credit = "Calculated by BrokerMsalController (Command)";
+                    @Override
+                    public String getMethodName() {
+                        return ":calculateInput";
+                    }
 
-        return leftHand + "\n" + credit;
+                    @Nullable
+                    @Override
+                    public String getTelemetryApiId() {
+                        return TelemetryEventStrings.Api.BROKER_CALCULATE_INPUT;
+                    }
+
+                    @Override
+                    public void putValueInSuccessEvent(ApiEndEvent event, String result) {
+                        event.put(TelemetryEventStrings.Key.CALCULATE_INPUT, result);
+                    }
+                });
     }
 
     /**

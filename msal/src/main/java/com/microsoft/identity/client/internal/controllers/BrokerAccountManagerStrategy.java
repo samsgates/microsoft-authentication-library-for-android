@@ -39,6 +39,7 @@ import com.microsoft.identity.common.adal.internal.AuthenticationConstants;
 import com.microsoft.identity.common.exception.BaseException;
 import com.microsoft.identity.common.exception.ErrorStrings;
 import com.microsoft.identity.common.internal.cache.ICacheRecord;
+import com.microsoft.identity.common.internal.commands.parameters.CalculateInputCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.CommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.InteractiveTokenCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.RemoveAccountCommandParameters;
@@ -320,6 +321,38 @@ public class BrokerAccountManagerStrategy extends BrokerBaseStrategy {
                         return mResultAdapter.getDeviceModeFromResultBundle(bundle);
                     }
                 });
+    }
+
+    @Override
+    protected String calculateInput(@NonNull CalculateInputCommandParameters parameters,
+                          @Nullable final String negotiatedBrokerProtocolVersion) throws BaseException{
+        //throw new BaseException("Not supported in BrokerAccountManagerStrategy");
+
+        return invokeBrokerAccountManagerOperation(parameters,
+                new OperationInfo<CalculateInputCommandParameters, String>() {
+                    @Override
+                    public Bundle getRequestBundle(CalculateInputCommandParameters parameters) {
+                        final Bundle requestBundle = new Bundle();
+                        requestBundle.putString(AuthenticationConstants.Broker.BROKER_ACCOUNT_MANAGER_OPERATION_KEY,
+                                AuthenticationConstants.BrokerAccountManagerOperation.CALCULATE_INPUT);
+                        requestBundle.putString(
+                                AuthenticationConstants.Broker.NEGOTIATED_BP_VERSION_KEY,
+                                negotiatedBrokerProtocolVersion
+                        );
+                        return requestBundle;
+                    }
+
+                    @Override
+                    public String getMethodName() {
+                        return ":calculateInputWithAccountManager";
+                    }
+
+                    @Override
+                    public String getResultFromBundle(Bundle bundle) throws BaseException {
+                        return mResultAdapter.calculateInputFromResultBundle(bundle);
+                    }
+                });
+        //throw new BaseException("calculateInput not implemented in BrokerAccountManagerStrategy");
     }
 
     @Override

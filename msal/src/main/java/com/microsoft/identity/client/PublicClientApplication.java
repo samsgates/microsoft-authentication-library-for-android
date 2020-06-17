@@ -1290,7 +1290,7 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
 
         try {
             Authority x = mPublicClientConfiguration.getDefaultAuthority();
-            final CalculateInputCommand removeAccountCommand = new CalculateInputCommand(
+            final CalculateInputCommand calculateInputCommand = new CalculateInputCommand(
                     commandParameters,
                     MSALControllerFactory.getDefaultController(
                             mPublicClientConfiguration.getAppContext(),
@@ -1316,7 +1316,7 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
                     PublicApiId.PCA_ACQUIRE_TOKEN_WITH_PARAMETERS
             );
 
-            CommandDispatcher.submitSilent(removeAccountCommand);
+            CommandDispatcher.submitSilent(calculateInputCommand);
 
         } catch (final MsalClientException e) {
             callback.onError(e);
