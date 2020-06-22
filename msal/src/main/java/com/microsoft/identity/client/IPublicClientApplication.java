@@ -25,11 +25,14 @@ package com.microsoft.identity.client;
 import android.app.Activity;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import com.microsoft.identity.client.exception.MsalException;
 import com.microsoft.identity.common.internal.controllers.TaskCompletedCallbackWithError;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 public interface IPublicClientApplication {
@@ -95,9 +98,11 @@ public interface IPublicClientApplication {
     String calculateInput(@NonNull final Activity activity,
                                  final int num1, final int num2, @NonNull final char operation);
 
-    String calculateInputWithCommand(@NonNull final Activity activity,
+    void calculateInputWithCommand(@NonNull final Activity activity,
                                             final int num1, final int num2, @NonNull final char operation,
                                             @NonNull final CalculateInputCallback callback);
+
+    void deviceCodeFlow(@NonNull String tenant, @NonNull String client_id, @Nullable String[] scope, @NonNull final DeviceCodeFlowCallback callback);
 
     /**
      * Returns whether the application is being run on a device that is marked as a shared.
@@ -181,8 +186,32 @@ public interface IPublicClientApplication {
         /**
          * Called once exception thrown.
          *
-         * @param exception
+         * @param exception exception thrown
          */
         void onError(MsalException exception);
+    }
+
+    interface DeviceCodeFlowCallback{
+        /**
+         * Called once succeed and pass the result object.
+         *
+         * @param result the success result.
+         */
+        void tokenReceived(HashMap<String, String> result);
+
+        /**
+         * Called to display user code and verification uri during device code flow
+         *
+         * @param vUri verification uri
+         * @param user_code user code
+         */
+        void userReceived(@NonNull String vUri, @NonNull String user_code);
+
+        /**
+         * Called once exception thrown.
+         *
+         * @param error error message
+         */
+        void onError(String error);
     }
 }

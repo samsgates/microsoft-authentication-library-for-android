@@ -44,6 +44,8 @@ import com.microsoft.identity.client.exception.MsalArgumentException;
 import com.microsoft.identity.client.exception.MsalClientException;
 import com.microsoft.identity.client.exception.MsalDeclinedScopeException;
 import com.microsoft.identity.client.exception.MsalException;
+import com.microsoft.identity.client.fadiHTTP.DeviceCodeFlowTest;
+import com.microsoft.identity.client.fadiHTTP.CodeFlowCallback;
 import com.microsoft.identity.client.internal.AsyncResult;
 import com.microsoft.identity.client.internal.CommandParametersAdapter;
 import com.microsoft.identity.client.internal.controllers.MSALControllerFactory;
@@ -1225,8 +1227,17 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
         return mPublicClientConfiguration.getIsSharedDevice();
     }
 
+    /**
+     * Compute input locally, part of ramp-up.
+     *
+     * @param activity caller activity
+     * @param num1 first number
+     * @param num2 second number
+     * @param operation operation to compute
+     * @return the result of the computation
+     */
     public String calculateInput(@NonNull final Activity activity,
-                               final int num1, final int num2, @NonNull final char operation) {
+                               final int num1, final int num2, final char operation) {
 
         // Create a parameters object
         CalculateInputParameters parameters = buildCalculateInputParameters(activity, num1, num2, operation);
@@ -1235,24 +1246,35 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
         return computeOutput(parameters);
     }
 
-
-    CalculateInputParameters buildCalculateInputParameters(
+    /**
+     * Helper for calculateInput, create a parameters object.
+     *
+     * @param activity caller activity
+     * @param num1 first number
+     * @param num2 second number
+     * @param operation operation to compute
+     * @return a parameters object
+     */
+    private CalculateInputParameters buildCalculateInputParameters(
             @NonNull final Activity activity,
             final int num1,
             final int num2,
-            @NonNull final char operation) {
+            final char operation) {
 
         CalculateInputParameters.Builder builder = new CalculateInputParameters.Builder();
-        CalculateInputParameters parameters = builder.startAuthorizationFromActivity(activity)
+        return builder.startAuthorizationFromActivity(activity)
                 .withNum1(num1)
                 .withNum2(num2)
                 .withOperation(operation)
                 .build();
-
-        return parameters;
     }
 
-    public String computeOutput(CalculateInputParameters parameters){
+    /**
+     * Helper function that takes parameters and computes the end result.
+     * @param parameters buildCalculateInputParameters object, contains activity, operation, and numbers.
+     * @return Computed value as string, as long as signature for local MSAL.
+     */
+    private String computeOutput(CalculateInputParameters parameters){
         double result = 0;
         int num1 = parameters.getNum1();
         int num2 = parameters.getNum2();
@@ -1278,8 +1300,17 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
         return leftHand + "\n" + credit;
     }
 
-    public String calculateInputWithCommand(@NonNull final Activity activity,
-                                            final int num1, final int num2, @NonNull final char operation,
+    /**
+     * Ramp-Up calculator api. Can be computed in Local MSAL or broker.
+     *
+     * @param activity caller activity
+     * @param num1 first number
+     * @param num2 second number
+     * @param operation operation to compute
+     * @param callback the callback method to receive the result of the operation
+     */
+    public void calculateInputWithCommand(@NonNull final Activity activity,
+                                            final int num1, final int num2, final char operation,
                                             @NonNull final CalculateInputCallback callback) {
 
         final CalculateInputCommandParameters commandParameters = CommandParametersAdapter
@@ -1321,8 +1352,48 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
         } catch (final MsalClientException e) {
             callback.onError(e);
         }
+    }
 
-        return null;
+    /**
+     * Function for implementing device code flow in the ramp-up application.
+     *
+     * @param tenant Tenant to use in url, common, consumers, organizations
+     * @param client_id id of the application calling this method
+     * @param paramScope scopes to be authorized
+     * @param callback method that handles the result
+     */
+    public void deviceCodeFlow(@NonNull String tenant, @NonNull String client_id, @Nullable String[] paramScope, @NonNull final DeviceCodeFlowCallback callback) {
+        String urlBody = String.format("https://login.microsoftonline.com/%s/oauth2/v2.0", tenant);
+
+        // Set up parameter map
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        parameters.put("client_id", client_id);
+        StringBuilder scopeString = new StringBuilder();
+        for (String s : paramScope){
+            scopeString.append(s);
+            scopeString.append(", ");
+        }
+        scopeString.setLength(scopeString.length() - 2);
+        parameters.put("scope", scopeString.toString());
+
+        DeviceCodeFlowTest codeFlow = new DeviceCodeFlowTest(urlBody, parameters, new CodeFlowCallback() {
+
+            @Override
+            public void tokenReceived(HashMap<String, String> tokenMap) {
+                callback.tokenReceived(tokenMap);
+            }
+
+            @Override
+            public void userReceived(@NonNull String vUri, @NonNull String user_code) {
+                callback.userReceived(vUri, user_code);
+            }
+
+            @Override
+            public void processFailed(int authCode, int tokenCode, String output) {
+                callback.onError(output);
+            }
+        });
+        codeFlow.execute();
     }
 
     @Override
