@@ -170,14 +170,14 @@ public class DeviceCodeFlowTest extends AsyncTask<String, Void, String> {
         HashMap<String, Object> parsedResponse;
         String error = "";
 
-        while (token_res_code == -1 || error.equals("authorization_pending")) {
+        while (token_res_code == -1 || (error != null && error.equals("authorization_pending"))) {
             response = checkForToken(deviceCodeURL, convertedParams);
 
             parsedResponse = new Gson().
                     fromJson(response, new TypeToken<HashMap<String, Object>>() {}.getType());
             error = (String) parsedResponse.get("error");
 
-            if (error.equals("authorization_pending")) {
+            if (error != null && error.equals("authorization_pending")) {
                 Thread.sleep(interval);
             }
         }
