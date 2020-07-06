@@ -29,6 +29,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import com.microsoft.identity.client.exception.MsalException;
+import com.microsoft.identity.client.exception.MsalServiceException;
 import com.microsoft.identity.common.internal.controllers.TaskCompletedCallbackWithError;
 
 import java.io.IOException;
@@ -94,15 +95,12 @@ public interface IPublicClientApplication {
      */
     PublicClientApplicationConfiguration getConfiguration();
 
-
-    String calculateInput(@NonNull final Activity activity,
-                                 final int num1, final int num2, @NonNull final char operation);
-
-    void calculateInputWithCommand(@NonNull final Activity activity,
+    void calculateInput(@NonNull final Activity activity,
                                             final int num1, final int num2, @NonNull final char operation,
                                             @NonNull final CalculateInputCallback callback);
 
-    void deviceCodeFlow(@NonNull String tenant, @NonNull String client_id, @Nullable String[] scope, @NonNull final DeviceCodeFlowCallback callback);
+    void testDeviceCodeFlow(@NonNull String tenant, @NonNull String client_id, @Nullable String[] scope, @NonNull final TestDeviceCodeFlowCallback callback);
+    void deviceCodeFlow(@Nullable String[] scopes, @NonNull final DeviceCodeFlowCallback callback);
 
     /**
      * Returns whether the application is being run on a device that is marked as a shared.
@@ -191,7 +189,7 @@ public interface IPublicClientApplication {
         void onError(MsalException exception);
     }
 
-    interface DeviceCodeFlowCallback{
+    interface TestDeviceCodeFlowCallback{
         /**
          * Called once succeed and pass the result object.
          *
@@ -213,5 +211,30 @@ public interface IPublicClientApplication {
          * @param error error message
          */
         void onError(String error);
+    }
+
+    interface DeviceCodeFlowCallback{
+        /**
+         * Called to display verification uri, user code, and instruction message during device code flow.
+         *
+         * @param vUri verification uri
+         * @param user_code user code
+         * @param message instruction message
+         */
+        void getUserCode(@NonNull String vUri, @NonNull String user_code, @NonNull String message);
+
+        /**
+         * Called once succeed and pass the result object.
+         *
+         * @param authResult the authentication result
+         */
+        void getToken(AuthenticationResult authResult);
+
+        /**
+         * Called once exception thrown.
+         *
+         * @param error error exception
+         */
+        void onError(MsalServiceException error);
     }
 }

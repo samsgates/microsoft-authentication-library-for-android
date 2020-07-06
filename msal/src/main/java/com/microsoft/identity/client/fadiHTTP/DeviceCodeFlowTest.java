@@ -211,16 +211,17 @@ public class DeviceCodeFlowTest extends AsyncTask<String, Void, String> {
         encodedResult.append("=");
         encodedResult.append(URLEncoder.encode(params.get("device_code"), "UTF-8"));
 
+        // Return the encoded String
         return encodedResult.toString();
     }
 
     /**
      * This helper method is used to send a single request to the token endpoint
      * @param url Request address
-     * @param cParams Request body
+     * @param rBody Request body
      * @throws IOException HTTP related exception
      */
-    private String checkForToken(@NonNull String url, @NonNull String cParams) throws IOException {
+    private String checkForToken(@NonNull String url, @NonNull String rBody) throws IOException {
         URL urlBody = new URL(url);
         HttpURLConnection con = (HttpURLConnection) urlBody.openConnection();
         con.setRequestMethod("POST");
@@ -231,7 +232,7 @@ public class DeviceCodeFlowTest extends AsyncTask<String, Void, String> {
 
         con.setDoOutput(true);
         DataOutputStream out = new DataOutputStream(con.getOutputStream());
-        out.writeBytes(cParams);
+        out.writeBytes(rBody);
         out.flush();
         out.close();
 

@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.microsoft.identity.client.CalculateInputParameters;
+import com.microsoft.identity.client.exception.MsalServiceException;
 import com.microsoft.identity.client.exception.MsalUiRequiredException;
 import com.microsoft.identity.common.exception.ArgumentException;
 import com.microsoft.identity.common.exception.ClientException;
@@ -39,12 +40,14 @@ import com.microsoft.identity.common.internal.authscheme.AbstractAuthenticationS
 import com.microsoft.identity.common.internal.cache.ICacheRecord;
 import com.microsoft.identity.common.internal.commands.parameters.CalculateInputCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.CommandParameters;
+import com.microsoft.identity.common.internal.commands.parameters.DeviceCodeFlowCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.InteractiveTokenCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.RemoveAccountCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.SilentTokenCommandParameters;
 import com.microsoft.identity.common.internal.controllers.BaseController;
 import com.microsoft.identity.common.internal.dto.AccountRecord;
 import com.microsoft.identity.common.internal.logging.Logger;
+import com.microsoft.identity.common.internal.net.HttpResponse;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationRequest;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationResult;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationStatus;
@@ -63,6 +66,7 @@ import com.microsoft.identity.common.internal.telemetry.events.ApiStartEvent;
 import com.microsoft.identity.common.internal.ui.AuthorizationStrategyFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -464,6 +468,49 @@ public class LocalMSALController extends BaseController {
     public String calculateInput(CalculateInputCommandParameters parameters) {
         return computeOutput(parameters);
     }
+
+    @Override
+    public HttpResponse dcfAuthRequest(DeviceCodeFlowCommandParameters commandParameters) throws ServiceException {
+        // Add default scopes to commandParameters
+
+        // Create OAuth2Strategy using commandParameters and strategyParameters
+        final OAuth2StrategyParameters strategyParameters;
+        final OAuth2Strategy oAuth2Strategy;
+
+        try {
+            // DCF protocol step 1: Get user code
+            // Populate authParams from commandParameters
+            HashMap <String, String> authParams;
+
+            // Call OAuth2Strategy to get step 1 response
+            HttpResponse authResponse = oAuth2Strategy.dcfExecuteAuthRequest(authParams);
+
+            // Validate auth response success
+            // May throw ServiceException
+            validateServiceResponse(authResponse);
+
+            // Once response is validated, return it
+            return authResponse;
+        }
+
+        catch (ServiceException serviceException){
+            // Convert serviceException to MsalServiceException
+            MsalServiceException msalError = new MsalServiceException(
+                    serviceException.getErrorCode(),
+                    serviceException.getMessage(),
+                    serviceException.getHttpStatusCode(),
+                    serviceException
+            );
+            throw msalError;
+        }
+    }
+
+    @Override
+    public AcquireTokenResult dcfTokenRequest(DeviceCodeFlowCommandParameters commandParameters, HashMap<String, String> tokenParams) throws ServiceException {
+        return null;
+    }
+
+    
 
     public String computeOutput(CalculateInputCommandParameters parameters){
         double result = 0;

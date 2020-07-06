@@ -44,6 +44,7 @@ import com.microsoft.identity.client.exception.MsalArgumentException;
 import com.microsoft.identity.client.exception.MsalClientException;
 import com.microsoft.identity.client.exception.MsalDeclinedScopeException;
 import com.microsoft.identity.client.exception.MsalException;
+import com.microsoft.identity.client.exception.MsalServiceException;
 import com.microsoft.identity.client.fadiHTTP.DeviceCodeFlowTest;
 import com.microsoft.identity.client.fadiHTTP.CodeFlowCallback;
 import com.microsoft.identity.client.internal.AsyncResult;
@@ -67,12 +68,14 @@ import com.microsoft.identity.common.internal.cache.MsalOAuth2TokenCache;
 import com.microsoft.identity.common.internal.cache.SchemaUtil;
 import com.microsoft.identity.common.internal.cache.SharedPreferencesFileManager;
 import com.microsoft.identity.common.internal.commands.CalculateInputCommand;
+import com.microsoft.identity.common.internal.commands.Command;
 import com.microsoft.identity.common.internal.commands.CommandCallback;
 import com.microsoft.identity.common.internal.commands.GetDeviceModeCommand;
 import com.microsoft.identity.common.internal.commands.InteractiveTokenCommand;
 import com.microsoft.identity.common.internal.commands.SilentTokenCommand;
 import com.microsoft.identity.common.internal.commands.parameters.CalculateInputCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.CommandParameters;
+import com.microsoft.identity.common.internal.commands.parameters.DeviceCodeFlowCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.InteractiveTokenCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.SilentTokenCommandParameters;
 import com.microsoft.identity.common.internal.controllers.BaseController;
@@ -90,6 +93,7 @@ import com.microsoft.identity.common.internal.providers.microsoft.MicrosoftAccou
 import com.microsoft.identity.common.internal.providers.microsoft.MicrosoftRefreshToken;
 import com.microsoft.identity.common.internal.providers.microsoft.azureactivedirectory.AzureActiveDirectory;
 import com.microsoft.identity.common.internal.providers.oauth2.OAuth2TokenCache;
+import com.microsoft.identity.common.internal.result.AcquireTokenResult;
 import com.microsoft.identity.common.internal.result.ILocalAuthenticationResult;
 import com.microsoft.identity.common.internal.result.ResultFuture;
 import com.microsoft.identity.msal.BuildConfig;
@@ -1228,79 +1232,6 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
     }
 
     /**
-     * Compute input locally, part of ramp-up.
-     *
-     * @param activity caller activity
-     * @param num1 first number
-     * @param num2 second number
-     * @param operation operation to compute
-     * @return the result of the computation
-     */
-    public String calculateInput(@NonNull final Activity activity,
-                               final int num1, final int num2, final char operation) {
-
-        // Create a parameters object
-        CalculateInputParameters parameters = buildCalculateInputParameters(activity, num1, num2, operation);
-
-        // Call computation method
-        return computeOutput(parameters);
-    }
-
-    /**
-     * Helper for calculateInput, create a parameters object.
-     *
-     * @param activity caller activity
-     * @param num1 first number
-     * @param num2 second number
-     * @param operation operation to compute
-     * @return a parameters object
-     */
-    private CalculateInputParameters buildCalculateInputParameters(
-            @NonNull final Activity activity,
-            final int num1,
-            final int num2,
-            final char operation) {
-
-        CalculateInputParameters.Builder builder = new CalculateInputParameters.Builder();
-        return builder.startAuthorizationFromActivity(activity)
-                .withNum1(num1)
-                .withNum2(num2)
-                .withOperation(operation)
-                .build();
-    }
-
-    /**
-     * Helper function that takes parameters and computes the end result.
-     * @param parameters buildCalculateInputParameters object, contains activity, operation, and numbers.
-     * @return Computed value as string, as long as signature for local MSAL.
-     */
-    private String computeOutput(CalculateInputParameters parameters){
-        double result = 0;
-        int num1 = parameters.getNum1();
-        int num2 = parameters.getNum2();
-        char op = parameters.getOperation();
-        switch (op) {
-            case '+':
-                result = num1 + num2;
-                break;
-            case '-':
-                result = num1 - num2;
-                break;
-            case 'x':
-                result = num1 * num2;
-                break;
-            case '/':
-                result = (double) num1 / (double) num2;
-                break;
-        }
-
-        String leftHand = num1 + " " + op + " " + num2 + " = " + result;
-        String credit = "Calculated by local MSAL";
-
-        return leftHand + "\n" + credit;
-    }
-
-    /**
      * Ramp-Up calculator api. Can be computed in Local MSAL or broker.
      *
      * @param activity caller activity
@@ -1309,7 +1240,7 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
      * @param operation operation to compute
      * @param callback the callback method to receive the result of the operation
      */
-    public void calculateInputWithCommand(@NonNull final Activity activity,
+    public void calculateInput(@NonNull final Activity activity,
                                             final int num1, final int num2, final char operation,
                                             @NonNull final CalculateInputCallback callback) {
 
@@ -1320,7 +1251,6 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
                         num1, num2, operation);
 
         try {
-            Authority x = mPublicClientConfiguration.getDefaultAuthority();
             final CalculateInputCommand calculateInputCommand = new CalculateInputCommand(
                     commandParameters,
                     MSALControllerFactory.getDefaultController(
@@ -1362,7 +1292,7 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
      * @param paramScope scopes to be authorized
      * @param callback method that handles the result
      */
-    public void deviceCodeFlow(@NonNull String tenant, @NonNull String client_id, @Nullable String[] paramScope, @NonNull final DeviceCodeFlowCallback callback) {
+    public void testDeviceCodeFlow(@NonNull String tenant, @NonNull String client_id, @Nullable String[] paramScope, @NonNull final TestDeviceCodeFlowCallback callback) {
         String urlBody = String.format("https://login.microsoftonline.com/%s/oauth2/v2.0", tenant);
 
         // Set up parameter map
@@ -1394,6 +1324,19 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
             }
         });
         codeFlow.execute();
+    }
+
+    public void deviceCodeFlow(@Nullable String[] scopes, @NonNull final DeviceCodeFlowCallback callback) {
+        // Create a DeviceCodeFlowCommandParameters object that takes in the desired scopes and the callback object
+        final DeviceCodeFlowCommandParameters commandParameters =
+                CommandParametersAdapter.createDeviceCodeFlowCommandParameters(
+                        mPublicClientConfiguration,
+                        mPublicClientConfiguration.getOAuth2TokenCache(),
+                        scopes);;
+
+        // Create a CommandCallback object from the DeviceCodeFlowCallback object
+        final CommandCallback dcfCallback = getCommandCallbackDCF(callback);
+
     }
 
     @Override
@@ -1858,6 +1801,31 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
                 } else {
                     throw new IllegalStateException("Silent requests cannot be cancelled.");
                 }
+            }
+        };
+    }
+
+    protected CommandCallback getCommandCallbackDCF(@NonNull final DeviceCodeFlowCallback callback) {
+        return new CommandCallback<AcquireTokenResult, MsalServiceException>() {
+            public void getUserCode(@NonNull String vUri, @NonNull String user_code, @NonNull String message){
+                callback.getUserCode(vUri, user_code, message);
+            }
+
+            @Override
+            public void onTaskCompleted(AcquireTokenResult acquireTokenResult) {
+                AuthenticationResult authResult;
+                //callback.getToken(authResult);
+            }
+
+            @Override
+            public void onError(MsalServiceException msalError) {
+                callback.onError(msalError);
+            }
+
+            @Override
+            public void onCancel() {
+                // Do nothing
+                // No current plans for allowing cancelation of DCF
             }
         };
     }
