@@ -235,6 +235,6 @@ public interface IPublicClientApplication {
          *
          * @param error error exception
          */
-        void onError(MsalServiceException error);
+        void onError(MsalException error);
     }
 }

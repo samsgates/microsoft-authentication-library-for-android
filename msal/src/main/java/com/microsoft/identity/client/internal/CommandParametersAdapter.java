@@ -222,6 +222,12 @@ public class CommandParametersAdapter {
             @NonNull final PublicClientApplicationConfiguration configuration,
             @NonNull final OAuth2TokenCache tokenCache,
             @NonNull String[] scopes){
+
+        final AbstractAuthenticationScheme authenticationScheme = AuthenticationSchemeFactory.createScheme(
+                configuration.getAppContext(),
+                null
+        );
+
         final DeviceCodeFlowCommandParameters commandParameters = DeviceCodeFlowCommandParameters.builder()
                 .androidApplicationContext(configuration.getAppContext())
                 .applicationName(configuration.getAppContext().getPackageName())
@@ -234,7 +240,9 @@ public class CommandParametersAdapter {
                 .sdkType(SdkType.MSAL)
                 .sdkVersion(PublicClientApplication.getSdkVersion())
                 .powerOptCheckEnabled(configuration.isPowerOptCheckForEnabled())
+                .authenticationScheme(authenticationScheme)
                 .scopes(new HashSet<>(Arrays.asList(scopes)))
+                .authority(configuration.getDefaultAuthority())
                 .build();
 
         return commandParameters;

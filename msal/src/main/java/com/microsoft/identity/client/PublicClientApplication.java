@@ -70,6 +70,8 @@ import com.microsoft.identity.common.internal.cache.SharedPreferencesFileManager
 import com.microsoft.identity.common.internal.commands.CalculateInputCommand;
 import com.microsoft.identity.common.internal.commands.Command;
 import com.microsoft.identity.common.internal.commands.CommandCallback;
+import com.microsoft.identity.common.internal.commands.DCFCommandCallback;
+import com.microsoft.identity.common.internal.commands.DeviceCodeFlowCommand;
 import com.microsoft.identity.common.internal.commands.GetDeviceModeCommand;
 import com.microsoft.identity.common.internal.commands.InteractiveTokenCommand;
 import com.microsoft.identity.common.internal.commands.SilentTokenCommand;
@@ -1335,8 +1337,36 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
                         scopes);;
 
         // Create a CommandCallback object from the DeviceCodeFlowCallback object
-        final CommandCallback dcfCallback = getCommandCallbackDCF(callback);
+        final DCFCommandCallback dcfCallback = getCommandCallbackDCF(callback);
 
+        // Attempt protocol
+        try {
+            // Create a DeviceCodeFlowCommand object
+            // Pass the command parameters, default controller, and callback
+            final DeviceCodeFlowCommand deviceCodeFlowCommand = new DeviceCodeFlowCommand(
+                    commandParameters,
+                    MSALControllerFactory.getDefaultController(
+                            mPublicClientConfiguration.getAppContext(),
+                            mPublicClientConfiguration.getDefaultAuthority(),
+                            mPublicClientConfiguration
+                    ),
+                    dcfCallback,
+                    PublicApiId.PCA_ACQUIRE_TOKEN_WITH_PARAMETERS
+            );
+
+            // Run the command we created above in a separate thread to allow running HTTP Requests
+            Thread thread = new Thread(new Runnable(){
+                @Override
+                public void run(){
+                    CommandDispatcher.submitSilent(deviceCodeFlowCommand);
+                }
+            });
+            thread.start();
+        }
+        catch (MsalClientException e) {
+            // Send the Exception through the callback object
+            callback.onError(e);
+        }
     }
 
     @Override
@@ -1805,14 +1835,16 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
         };
     }
 
-    protected CommandCallback getCommandCallbackDCF(@NonNull final DeviceCodeFlowCallback callback) {
-        return new CommandCallback<AcquireTokenResult, MsalServiceException>() {
+    protected DCFCommandCallback getCommandCallbackDCF(@NonNull final DeviceCodeFlowCallback callback) {
+        return new DCFCommandCallback<AcquireTokenResult, MsalServiceException>() {
+            @Override
             public void getUserCode(@NonNull String vUri, @NonNull String user_code, @NonNull String message){
                 callback.getUserCode(vUri, user_code, message);
             }
 
             @Override
             public void onTaskCompleted(AcquireTokenResult acquireTokenResult) {
+                // Convert tokenResult to an AuthenticationResult object
                 AuthenticationResult authResult;
                 //callback.getToken(authResult);
             }

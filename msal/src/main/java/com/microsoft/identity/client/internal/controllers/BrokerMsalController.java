@@ -50,11 +50,13 @@ import com.microsoft.identity.common.internal.cache.ICacheRecord;
 import com.microsoft.identity.common.internal.cache.MsalOAuth2TokenCache;
 import com.microsoft.identity.common.internal.commands.parameters.CalculateInputCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.CommandParameters;
+import com.microsoft.identity.common.internal.commands.parameters.DeviceCodeFlowCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.InteractiveTokenCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.RemoveAccountCommandParameters;
 import com.microsoft.identity.common.internal.commands.parameters.SilentTokenCommandParameters;
 import com.microsoft.identity.common.internal.controllers.BaseController;
 import com.microsoft.identity.common.internal.logging.Logger;
+import com.microsoft.identity.common.internal.net.HttpResponse;
 import com.microsoft.identity.common.internal.providers.microsoft.MicrosoftRefreshToken;
 import com.microsoft.identity.common.internal.providers.microsoft.azureactivedirectory.ClientInfo;
 import com.microsoft.identity.common.internal.providers.microsoft.microsoftsts.MicrosoftStsAccount;
@@ -69,6 +71,7 @@ import com.microsoft.identity.common.internal.util.AccountManagerUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -565,6 +568,7 @@ public class BrokerMsalController extends BaseController {
     public String calculateInput(CalculateInputCommandParameters parameters) throws Exception{
         return computeOutput(parameters);
     }
+
     public String computeOutput(CalculateInputCommandParameters parameters) throws Exception{
         return invokeBrokerOperation(parameters,
                 new BrokerOperationInfo<CalculateInputCommandParameters, String>() {
@@ -592,6 +596,16 @@ public class BrokerMsalController extends BaseController {
                         event.put(TelemetryEventStrings.Key.CALCULATE_INPUT, result);
                     }
                 });
+    }
+
+    @Override
+    public HttpResponse dcfAuthRequest(DeviceCodeFlowCommandParameters commandParameters) throws Exception{
+        throw new ClientException("dcfAuthRequest() not supported in BrokerMsalController");
+    }
+
+    @Override
+    public AcquireTokenResult dcfTokenRequest(DeviceCodeFlowCommandParameters commandParameters, HashMap<String, String> tokenParams) throws Exception {
+        throw new ClientException("dcfTokenRequest() not supported in BrokerMsalController");
     }
 
     /**

@@ -48,6 +48,7 @@ import com.microsoft.identity.common.internal.controllers.BaseController;
 import com.microsoft.identity.common.internal.dto.AccountRecord;
 import com.microsoft.identity.common.internal.logging.Logger;
 import com.microsoft.identity.common.internal.net.HttpResponse;
+import com.microsoft.identity.common.internal.providers.microsoft.microsoftsts.MicrosoftStsOAuth2Strategy;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationRequest;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationResult;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationStatus;
@@ -469,49 +470,6 @@ public class LocalMSALController extends BaseController {
         return computeOutput(parameters);
     }
 
-    @Override
-    public HttpResponse dcfAuthRequest(DeviceCodeFlowCommandParameters commandParameters) throws ServiceException {
-        // Add default scopes to commandParameters
-
-        // Create OAuth2Strategy using commandParameters and strategyParameters
-        final OAuth2StrategyParameters strategyParameters;
-        final OAuth2Strategy oAuth2Strategy;
-
-        try {
-            // DCF protocol step 1: Get user code
-            // Populate authParams from commandParameters
-            HashMap <String, String> authParams;
-
-            // Call OAuth2Strategy to get step 1 response
-            HttpResponse authResponse = oAuth2Strategy.dcfExecuteAuthRequest(authParams);
-
-            // Validate auth response success
-            // May throw ServiceException
-            validateServiceResponse(authResponse);
-
-            // Once response is validated, return it
-            return authResponse;
-        }
-
-        catch (ServiceException serviceException){
-            // Convert serviceException to MsalServiceException
-            MsalServiceException msalError = new MsalServiceException(
-                    serviceException.getErrorCode(),
-                    serviceException.getMessage(),
-                    serviceException.getHttpStatusCode(),
-                    serviceException
-            );
-            throw msalError;
-        }
-    }
-
-    @Override
-    public AcquireTokenResult dcfTokenRequest(DeviceCodeFlowCommandParameters commandParameters, HashMap<String, String> tokenParams) throws ServiceException {
-        return null;
-    }
-
-    
-
     public String computeOutput(CalculateInputCommandParameters parameters){
         double result = 0;
         int num1 = parameters.getNum1();
@@ -536,5 +494,98 @@ public class LocalMSALController extends BaseController {
         String credit = "Calculated by LocalMSALController (Command)";
 
         return leftHand + "\n" + credit;
+    }
+
+    @Override
+    public HttpResponse dcfAuthRequest(DeviceCodeFlowCommandParameters commandParameters) throws Exception {
+//        // Add default scopes to commandParameters
+//
+//        // Create OAuth2Strategy using commandParameters and strategyParameters
+//        final OAuth2StrategyParameters strategyParameters = new OAuth2StrategyParameters();
+//        strategyParameters.setContext(commandParameters.getAndroidApplicationContext());
+//
+//        final OAuth2Strategy oAuth2Strategy = commandParameters
+//                .getAuthority()
+//                .createOAuth2Strategy(strategyParameters);
+//
+//        try {
+//            // DCF protocol step 1: Get user code
+//            // Populate authParams from commandParameters
+//            HashMap <String, String> authParams = populateAuthParams(commandParameters);
+//
+//            // Call OAuth2Strategy to get step 1 response
+//            HttpResponse authResponse = oAuth2Strategy.dcfExecuteAuthRequest(authParams);
+//
+//            // Validate auth response success
+//            // May throw ServiceException
+//            validateServiceResponse(authResponse);
+//
+//            // Once response is validated, return it
+//            return authResponse;
+//        }
+//
+//        catch (ServiceException serviceException){
+//            // Exception thrown by validateServiceResponse
+//            // Convert ServiceException to MsalServiceException
+//            MsalServiceException msalError = new MsalServiceException(
+//                    serviceException.getErrorCode(),
+//                    serviceException.getMessage(),
+//                    serviceException.getHttpStatusCode(),
+//                    serviceException
+//            );
+//
+//            throw msalError;
+//        }
+        return null;
+    }
+
+    private HashMap<String, String> populateAuthParams(DeviceCodeFlowCommandParameters cParams) {
+        // Use the command parameters to populate authParams
+        return null;
+    }
+
+    @Override
+    public AcquireTokenResult dcfTokenRequest(DeviceCodeFlowCommandParameters commandParameters, HashMap<String, String> tokenParams) throws ServiceException {
+        return null;
+    }
+
+    private AcquireTokenResult parseTokenResponse(@NonNull String tokenResponse) {
+        // Parse the response body from token poling and return an AcquireTokenResult object
+        return null;
+    }
+
+    private void validateServiceResponse(@NonNull HttpResponse response) throws ServiceException {
+        // Method is called for both parts of the DCF protocol
+
+        // Validate that the response was successful based on the HttpResponse object, throw service exception otherwise
+
+        // Service exception will match the response's failure code
+//        if ( /* The response indicates that the request failed */){
+
+            // Fetch error code and message based on response
+//            String errorCode = getResponseErrorCode(response);
+//            String errorMsg = getResponseErrorMessage(errorCode);
+//
+//            ServiceException error = new ServiceException(
+//                    errorCode,
+//                    errorMsg,
+//                    response.statusCode,
+//                    null
+//            );
+//
+//            throw error;
+//        }
+    }
+
+    private String getResponseErrorCode(@NonNull HttpResponse response) {
+        // Match the error in the response body to one of the predefined codes
+        // EX: may return DeviceCodeFlowCommand.EXPIRED_TOKEN_CODE
+        return null;
+    }
+
+    private String getResponseErrorMessage(@NonNull String code) {
+        // Match the error code to its error message
+        // EX: may return DeviceCodeFlowCommand.EXPIRED_TOKEN_MSG
+        return null;
     }
 }
