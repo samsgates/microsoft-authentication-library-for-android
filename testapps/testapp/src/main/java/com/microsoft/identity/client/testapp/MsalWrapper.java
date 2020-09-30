@@ -27,6 +27,7 @@ import com.microsoft.identity.client.exception.MsalUiRequiredException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /// Acting as a bridge between the result of MsalWrapper's results and the outside world.
@@ -204,12 +205,12 @@ abstract class MsalWrapper {
                     public void onUserCodeReceived(@NonNull String vUri,
                                                    @NonNull String userCode,
                                                    @NonNull String message,
-                                                   @NonNull String expiresIn) {
+                                                   @NonNull Date sessionExpirationDate) {
                         callback.showMessage(
                                 "Uri: " + vUri + "\n" +
                                 "UserCode: " + userCode + "\n" +
                                 "Message: " + message + "\n" +
-                                "expiresIn: " + expiresIn);
+                                "sessionExpirationDate: " + sessionExpirationDate);
                     }
 
                     @Override

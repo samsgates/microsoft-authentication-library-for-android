@@ -37,6 +37,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -50,12 +51,15 @@ public class ShadowDeviceCodeFlowCommandSuccessful {
 
     @Implementation
     public AcquireTokenResult execute() {
+        final Date expiryDate = new Date();
+        expiryDate.setTime(expiryDate.getTime() + 900000);
+
         final DeviceCodeFlowCommandCallback callback = (DeviceCodeFlowCommandCallback) mDeviceCodeFlowCommand.getCallback();
         callback.onUserCodeReceived(
                 "https://login.microsoftonline.com/common/oauth2/deviceauth",
                 "ABCDEFGH",
                 "Follow these instructions to authenticate.",
-                "900");
+                expiryDate);
 
         // Create parameters for dummy authentication result
         final CacheRecord cacheRecord = new CacheRecord();

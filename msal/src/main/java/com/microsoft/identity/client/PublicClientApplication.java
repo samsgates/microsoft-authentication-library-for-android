@@ -101,6 +101,7 @@ import com.microsoft.identity.msal.BuildConfig;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1768,8 +1769,8 @@ public class PublicClientApplication implements IPublicClientApplication, IToken
             public void onUserCodeReceived(@NonNull final String vUri,
                                            @NonNull final String userCode,
                                            @NonNull final String message,
-                                           @NonNull final String expiresIn) {
-                callback.onUserCodeReceived(vUri, userCode, message, expiresIn);
+                                           @NonNull final Date sessionExpirationDate) {
+                callback.onUserCodeReceived(vUri, userCode, message, sessionExpirationDate);
             }
 
             @Override
