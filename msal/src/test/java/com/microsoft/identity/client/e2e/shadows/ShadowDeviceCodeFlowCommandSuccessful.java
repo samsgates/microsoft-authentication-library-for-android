@@ -54,7 +54,8 @@ public class ShadowDeviceCodeFlowCommandSuccessful {
         callback.onUserCodeReceived(
                 "https://login.microsoftonline.com/common/oauth2/deviceauth",
                 "ABCDEFGH",
-                "Follow these instructions to authenticate.");
+                "Follow these instructions to authenticate.",
+                "900");
 
         // Create parameters for dummy authentication result
         final CacheRecord cacheRecord = new CacheRecord();

@@ -175,7 +175,7 @@ public interface IPublicClientApplication {
      * Callback object used in Device Code Flow.
      * This callback provides the following methods for communicating with the protocol.
      * 1). Receiving authentication information (user_code, verification_uri, and instruction message)
-     * via {@link DeviceCodeFlowCallback#onUserCodeReceived(String, String, String)}.
+     * via {@link DeviceCodeFlowCallback#onUserCodeReceived(String, String, String, String)}.
      * 2). Receiving a successful authentication result containing a fresh access token
      * via {@link DeviceCodeFlowCallback#onTokenReceived(AuthenticationResult)}.
      * 3). Receiving an exception detailing what went wrong in the protocol
@@ -190,8 +190,9 @@ public interface IPublicClientApplication {
          * @param vUri verification uri
          * @param userCode user code
          * @param message instruction message
+         * @param expiresIn the number of seconds before the DCF session expires.
          */
-        void onUserCodeReceived(@NonNull final String vUri, @NonNull final String userCode, @NonNull final String message);
+        void onUserCodeReceived(@NonNull final String vUri, @NonNull final String userCode, @NonNull final String message, @NonNull String expiresIn);
 
         /**
          * Invoked once token is received and passes the {@link AuthenticationResult} object.

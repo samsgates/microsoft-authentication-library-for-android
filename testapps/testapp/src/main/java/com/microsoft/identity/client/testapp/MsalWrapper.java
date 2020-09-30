@@ -201,10 +201,15 @@ abstract class MsalWrapper {
                 requestOptions.getScopes().toLowerCase().split(" "),
                 new IPublicClientApplication.DeviceCodeFlowCallback() {
                     @Override
-                    public void onUserCodeReceived(@NonNull String vUri, @NonNull String userCode, @NonNull String message) {
+                    public void onUserCodeReceived(@NonNull String vUri,
+                                                   @NonNull String userCode,
+                                                   @NonNull String message,
+                                                   @NonNull String expiresIn) {
                         callback.showMessage(
                                 "Uri: " + vUri + "\n" +
-                                "UserCode: " + userCode);
+                                "UserCode: " + userCode + "\n" +
+                                "Message: " + message + "\n" +
+                                "expiresIn: " + expiresIn);
                     }
 
                     @Override

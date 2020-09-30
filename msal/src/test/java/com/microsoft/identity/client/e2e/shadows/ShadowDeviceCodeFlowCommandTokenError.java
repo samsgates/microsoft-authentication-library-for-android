@@ -45,7 +45,8 @@ public class ShadowDeviceCodeFlowCommandTokenError {
         callback.onUserCodeReceived(
                 "https://login.microsoftonline.com/common/oauth2/deviceauth",
                 "ABCDEFGH",
-                "Follow these instructions to authenticate.");
+                "Follow these instructions to authenticate.",
+                "900");
 
         throw new ServiceException(ErrorStrings.DEVICE_CODE_FLOW_EXPIRED_TOKEN_ERROR_CODE, "The device_code expired. No need to continue polling for the token (expired token).", null);
     }
